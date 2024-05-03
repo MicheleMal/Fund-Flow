@@ -10,13 +10,16 @@ export class Earning {
   earning_description: string;
 
   @Prop({ type: Number, required: true })
-  amount: number;
+  earning_amount: number;
 
   @Prop({ type: Date, required: true, default: Date.now })
   earning_date: Date;
 
-  @Prop({ types: SchemaTypes.ObjectId, ref: EarningSource.name })
+  @Prop({ type: SchemaTypes.ObjectId, ref: EarningSource.name })
   id_earning_source: Types.ObjectId;
+
+  // @Prop({ type: SchemaTypes.ObjectId, ref: EarningSource.name })
+  // id_user: Types.ObjectId;
 }
 
 export const EarningSchema = SchemaFactory.createForClass(Earning);

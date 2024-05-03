@@ -4,9 +4,9 @@ import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { EarningsModule } from './earnings/earnings.module';
+import { ExpensesModule } from './expenses/expenses.module';
 
-//TODO: Sviluppare le tabelle, endpoint categoria uscite ed uscite
-//TODO: Aggiungere tabella utenti ed aggiungere campo id_utente nella tabella totalEarning
+//TODO: Controllare gli spazi su patch
 
 @Module({
   imports: [
@@ -15,6 +15,7 @@ import { EarningsModule } from './earnings/earnings.module';
     }),
     MongooseModule.forRoot(process.env.DATABASE_URL_DEV),
     EarningsModule,
+    ExpensesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

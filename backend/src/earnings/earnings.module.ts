@@ -12,6 +12,7 @@ import {
   TotalEarnings,
   TotalEarningsSchema,
 } from 'src/schemas/TotalEarnings.schema';
+import { EarningSourcesModule } from './earning-sources/earning-sources.module';
 
 @Module({
   imports: [
@@ -21,24 +22,24 @@ import {
         schema: EarningSchema,
       },
       {
-        name: EarningSource.name,
-        schema: EarningSourceSchema,
-      },
-      {
         name: TotalEarnings.name,
         schema: TotalEarningsSchema,
       },
     ]),
+    EarningSourcesModule,
   ],
   controllers: [EarningsController],
   providers: [EarningsService],
 })
 export class EarningsModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(ObjectIdValidationMiddleware).forRoutes(
-      { path: 'incomes/:id', method: RequestMethod.GET },
-      // {path:'incomes/update/:id', method: RequestMethod.PATCH},
-      { path: 'incomes/delete/:id', method: RequestMethod.DELETE },
+    consumer.apply(ObjectIdValidationMiddleware).exclude(
+      {path: 'earnings/all', method: RequestMethod.GET}
+    )
+    .forRoutes(
+      { path: 'earnings/:id', method: RequestMethod.GET },
+      {path:'earnings/update/:id', method: RequestMethod.PATCH},
+      { path: 'earnings/delete/:id', method: RequestMethod.DELETE },
     );
   }
 }

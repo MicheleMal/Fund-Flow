@@ -1,9 +1,5 @@
-import {
-  IsNotEmpty,
-  IsNumber,
-  IsString,
-} from 'class-validator';
-import { Types } from 'mongoose';
+import { IsDateString, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {Types } from 'mongoose';
 
 export class EarningDto {
   @IsString({
@@ -13,12 +9,14 @@ export class EarningDto {
 
   @IsNumber()
   @IsNotEmpty()
-  amount: number;
+  earning_amount: number;
 
-  //? Inserire se possibile valore di default
-  //? Inserire controllo IsDate
+  @IsDateString()
   earning_date: Date;
 
   @IsNotEmpty()
   id_earning_source: Types.ObjectId;
+
+  // @IsNotEmpty()
+  // id_user: Types.ObjectId;
 }

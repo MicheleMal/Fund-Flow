@@ -1,5 +1,3 @@
-//? Cambiare da incomes a earning
-
 import {
   Body,
   Controller,
@@ -13,7 +11,6 @@ import {
 import { EarningsService } from '../service/earnings.service';
 import { EarningDto } from 'src/earnings/dto/earning.dto';
 import { UpdateEarningDto } from 'src/earnings/dto/update-earning.dto';
-import { EarningSourceDto } from '../dto/earning-source.dto';
 
 @Controller('earnings')
 export class EarningsController {
@@ -25,11 +22,6 @@ export class EarningsController {
     return this.earningsService.getAllEarnings();
   }
 
-  @Get('source/all')
-  getAllSource(): Promise<EarningSourceDto[]> {
-    return this.earningsService.getAllEarningsSource();
-  }
-
   // /earnings/:id
   @Get(':id')
   getById(@Param('id') id: string): Promise<EarningDto> {
@@ -38,30 +30,22 @@ export class EarningsController {
 
   // /earnings/insert
   @Post('insert')
-  insert(@Body(ValidationPipe) incomeDto: EarningDto): Promise<EarningDto> {
-    return this.earningsService.insertNewEarning(incomeDto);
-  }
-
-  // /earnings/source/insert
-  @Post('source/insert')
-  insertEarningSource(
-    @Body(ValidationPipe) earningSourceDto: EarningSourceDto,
-  ): Promise<EarningSourceDto> {
-    return this.earningsService.insertNewEarningSource(earningSourceDto);
+  insert(@Body(ValidationPipe) earningDto: EarningDto): Promise<EarningDto> {
+    return this.earningsService.insertNewEarning(earningDto);
   }
 
   // /earnings/update/:id
-  @Patch('/update/:id')
+  @Patch('update/:id')
   update(
-    @Body(ValidationPipe) updateIncomeDto: UpdateEarningDto,
+    @Body(ValidationPipe) updateEarningDto: UpdateEarningDto,
     @Param('id') id: string,
-  ) {
-    return this.earningsService.updateEarning(updateIncomeDto, id);
+  ): Promise<UpdateEarningDto>  {
+    return this.earningsService.updateEarning(updateEarningDto, id);
   }
 
   // /earnings/delete/:id
   @Delete('delete/:id')
-  delete(@Param('id') id: string) {
+  delete(@Param('id') id: string): Promise<EarningDto>  {
     return this.earningsService.deleteEarning(id);
   }
 }
