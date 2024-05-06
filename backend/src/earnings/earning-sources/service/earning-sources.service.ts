@@ -18,7 +18,7 @@ export class EarningSourcesService {
   async getAllEarningsSource(): Promise<EarningSourceDto[]> {
     const allEarningSources = await this.earningSourceModel.find().exec();
     if (allEarningSources.length === 0) {
-      throw new NotFoundException('Nessun fonte di guadagno inserito');
+      throw new NotFoundException('Nessun fonte di entrata inserito');
     }
     return allEarningSources;
   }

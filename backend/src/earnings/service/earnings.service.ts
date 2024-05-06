@@ -27,7 +27,7 @@ export class EarningsService {
       .exec();
 
     if (allEarnings.length === 0) {
-      throw new NotFoundException('Nessun guadagno inserito');
+      throw new NotFoundException('Nessun entrata inserito');
     }
     return allEarnings;
   }
@@ -37,7 +37,7 @@ export class EarningsService {
     const earning = await this.earningModel.findById(_id).populate('id_earning_source').exec();
 
     if (!earning) {
-      throw new NotFoundException('Nessun guadagno trovato');
+      throw new NotFoundException('Nessun entrata trovato');
     }
 
     return earning;
@@ -108,7 +108,7 @@ export class EarningsService {
     const deleteEarning = await this.earningModel.findByIdAndDelete(_id).exec();
 
     if (!deleteEarning) {
-      throw new NotFoundException('Nessun guadagno trovato da eliminare');
+      throw new NotFoundException('Nessun entrata trovato da eliminare');
     }
     return deleteEarning;
   }
@@ -123,7 +123,7 @@ export class EarningsService {
       .exec();
 
     if (!updateEarning) {
-      throw new NotFoundException('Nessun guadagno trovato da modificare');
+      throw new NotFoundException('Nessun entrata trovato da modificare');
     }
 
     return updateEarning;

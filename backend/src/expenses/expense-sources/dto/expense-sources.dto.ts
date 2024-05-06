@@ -1,6 +1,6 @@
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 
-export class ExpenseCategoryDto {
+export class ExpenseSourceDto {
   @IsString({
     message: 'Enter a string format',
   })

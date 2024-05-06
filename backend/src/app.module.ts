@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { EarningsModule } from './earnings/earnings.module';
 import { ExpensesModule } from './expenses/expenses.module';
 
+
 //TODO: Controllare gli spazi su patch
 
 @Module({
