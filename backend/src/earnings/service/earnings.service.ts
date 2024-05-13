@@ -16,7 +16,7 @@ export class EarningsService {
   constructor(
     @InjectModel('Earning') private readonly earningModel: Model<Earning>,
     @InjectModel('TotalEarnings')
-    private readonly totalEarningsModel: Model<TotalEarnings>,
+    private readonly totalEarningModel: Model<TotalEarnings>,
   ) {}
 
   // Get all earnings
@@ -34,7 +34,10 @@ export class EarningsService {
 
   // Get all earning by id
   async getEarninById(_id: string): Promise<EarningDto> {
-    const earning = await this.earningModel.findById(_id).populate('id_earning_source').exec();
+    const earning = await this.earningModel
+      .findById(_id)
+      .populate('id_earning_source')
+      .exec();
 
     if (!earning) {
       throw new NotFoundException('Nessun entrata trovato');
@@ -86,7 +89,7 @@ export class EarningsService {
     const yearUser = new Date(earningDto.earning_date).getFullYear();
 
     const amountUser = earningDto.earning_amount;
-    const earning = await this.totalEarningsModel
+    const earning = await this.totalEarningModel
       .findOneAndUpdate(
         { month: monthUser, year: yearUser },
         {
@@ -99,7 +102,7 @@ export class EarningsService {
 
     return this.earningModel.create({
       ...earningDto,
-      earning_description: earningDto.earning_description.trim()
+      earning_description: earningDto.earning_description.trim(),
     });
   }
 
@@ -110,6 +113,19 @@ export class EarningsService {
     if (!deleteEarning) {
       throw new NotFoundException('Nessun entrata trovato da eliminare');
     }
+
+    this.totalEarningModel
+      .findOneAndUpdate(
+        {
+          year: deleteEarning.earning_date.getFullYear(),
+          month: deleteEarning.earning_date.getMonth() + 1,
+        },
+        {
+          $inc: { earnings_total: -deleteEarning.earning_amount },
+        },
+      )
+      .exec();
+
     return deleteEarning;
   }
 
@@ -118,12 +134,34 @@ export class EarningsService {
     updateEarningDto: UpdateEarningDto,
     _id: string,
   ): Promise<UpdateEarningDto> {
+    const earningCurrent = await this.getEarninById(_id);
+
     const updateEarning = await this.earningModel
-      .findByIdAndUpdate(_id, updateEarningDto, { new: true })
+      .findByIdAndUpdate(_id, updateEarningDto, { new: true }).populate('id_earning_source')
       .exec();
 
     if (!updateEarning) {
       throw new NotFoundException('Nessun entrata trovato da modificare');
+    }
+
+    const monthUser = earningCurrent.earning_date.getMonth() + 1;
+    const yearUser = earningCurrent.earning_date.getFullYear();
+
+    if (updateEarningDto.earning_amount > earningCurrent.earning_amount) {
+      const totalEarning = await this.totalEarningModel
+        .findOne({ month: monthUser, year: yearUser })
+        .exec();
+
+      totalEarning.earnings_total = (totalEarning.earnings_total - earningCurrent.earning_amount) + updateEarningDto.earning_amount;
+
+      await totalEarning.save();
+    } else {
+      const totalEarning = await this.totalEarningModel
+        .findOne({ month: monthUser, year: yearUser })
+        .exec();
+      totalEarning.earnings_total = totalEarning.earnings_total - (earningCurrent.earning_amount - updateEarningDto.earning_amount);
+
+      await totalEarning.save();
     }
 
     return updateEarning;

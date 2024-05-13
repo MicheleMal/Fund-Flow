@@ -7,6 +7,7 @@ import { EarningsModule } from './earnings/earnings.module';
 import { ExpensesModule } from './expenses/expenses.module';
 
 
+//TODO: Cambiare guadagno totale quando si modifica o elimina un entrata
 //TODO: Controllare gli spazi su patch
 
 @Module({
