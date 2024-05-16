@@ -34,7 +34,7 @@ export class ExpensesService {
     return expense
   }
 
-  async insertNewExpense(expenseDto: ExpensesDto): Promise<ExpensesDto> {
+  async insertNewExpense(expenseDto: ExpensesDto): Promise<ExpensesDto> {    
     const newExpense = await this.expenseModel.create({
       ...expenseDto,
       expense_description: expenseDto.expense_description.trim(),

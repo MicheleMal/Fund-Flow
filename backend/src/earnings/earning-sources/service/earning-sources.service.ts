@@ -11,7 +11,7 @@ import { UpdateEarningSourceDto } from '../dto/update-earning-source.dto';
 
 @Injectable()
 export class EarningSourcesService {
-  @InjectModel('EarningSource')
+  @InjectModel(EarningSource.name)
   private readonly earningSourceModel: Model<EarningSource>;
 
   // Get all earning sources

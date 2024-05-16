@@ -12,7 +12,7 @@ import { UpdateExpenseSourcesDto } from '../dto/update-expense-sources.dto';
 @Injectable()
 export class ExpenseSourcesService {
   constructor(
-    @InjectModel('ExpenseSource')
+    @InjectModel(ExpenseSource.name)
     private readonly expenseSourceModel: Model<ExpenseSource>,
   ) {}
 

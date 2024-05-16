@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { IsDateString, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import {Types } from 'mongoose';
 
@@ -11,7 +12,8 @@ export class EarningDto {
   @IsNotEmpty()
   earning_amount: number;
 
-  @IsDateString()
+  @Transform((value)=>value || new Date(), {toClassOnly: true})
+  // @IsDateString()
   earning_date: Date;
 
   @IsNotEmpty()

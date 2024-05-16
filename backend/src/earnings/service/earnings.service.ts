@@ -1,5 +1,4 @@
 import {
-  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,14 +7,13 @@ import { Model } from 'mongoose';
 import { EarningDto } from 'src/earnings/dto/earning.dto';
 import { UpdateEarningDto } from 'src/earnings/dto/update-earning.dto';
 import { Earning } from 'src/schemas/Earning.schema';
-import { EarningSource } from 'src/schemas/EarningSource.schema';
 import { TotalEarnings } from 'src/schemas/TotalEarnings.schema';
 
 @Injectable()
 export class EarningsService {
   constructor(
-    @InjectModel('Earning') private readonly earningModel: Model<Earning>,
-    @InjectModel('TotalEarnings')
+    @InjectModel(Earning.name) private readonly earningModel: Model<Earning>,
+    @InjectModel(TotalEarnings.name)
     private readonly totalEarningModel: Model<TotalEarnings>,
   ) {}
 
@@ -85,8 +83,14 @@ export class EarningsService {
     // }
 
     // Seconda versione
-    const monthUser = new Date(earningDto.earning_date).getMonth() + 1;
-    const yearUser = new Date(earningDto.earning_date).getFullYear();
+    let earningDate
+    if(!earningDto.earning_date){
+      earningDate = new Date()
+    }else{
+      earningDate = earningDto.earning_date
+    }
+    const monthUser = new Date(earningDate).getMonth() + 1;
+    const yearUser = new Date(earningDate).getFullYear();
 
     const amountUser = earningDto.earning_amount;
     const earning = await this.totalEarningModel
