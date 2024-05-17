@@ -91,6 +91,9 @@ export class EarningsService {
     }
     const monthUser = new Date(earningDate).getMonth() + 1;
     const yearUser = new Date(earningDate).getFullYear();
+    console.log(yearUser);
+    return
+    
 
     const amountUser = earningDto.earning_amount;
     const earning = await this.totalEarningModel

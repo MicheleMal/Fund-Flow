@@ -11,6 +11,7 @@ import { ExpensesController } from './controller/expenses.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Expense, ExpenseSchema } from 'src/schemas/Expense.schema';
 import { ObjectIdValidationMiddleware } from 'src/middleware/object-id-validation/object-id-validation.middleware';
+import { TotalExpenses, TotalExpensesSchema } from 'src/schemas/TotalExpenses.schema';
 
 @Module({
   imports: [
@@ -19,6 +20,10 @@ import { ObjectIdValidationMiddleware } from 'src/middleware/object-id-validatio
         name: Expense.name,
         schema: ExpenseSchema,
       },
+      {
+        name: TotalExpenses.name,
+        schema: TotalExpensesSchema,
+      }
     ]),
     ExpenseSourcesModule,
   ],
