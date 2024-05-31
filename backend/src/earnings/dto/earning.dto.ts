@@ -18,7 +18,4 @@ export class EarningDto {
 
   @IsNotEmpty()
   id_earning_source: Types.ObjectId;
-
-  // @IsNotEmpty()
-  // id_user: Types.ObjectId;
 }

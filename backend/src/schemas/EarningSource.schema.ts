@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
+import { User } from './User.schema';
 
 export type EarningSourceDocument = HydratedDocument<EarningSource>;
 
@@ -10,6 +11,9 @@ export class EarningSource {
 
   @Prop({ enum: ['Fixed', 'Variable'], default: "Variable",required: true })
   earning_type: 'Fixed' | 'Variable';
+
+  @Prop({ type: SchemaTypes.ObjectId, ref: User.name })
+  id_user: Types.ObjectId;
 }
 
 export const EarningSourceSchema = SchemaFactory.createForClass(EarningSource);

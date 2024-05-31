@@ -34,10 +34,16 @@ export class ExpensesModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(ObjectIdValidationMiddleware)
-      .exclude({
-        path: 'expenses/all',
-        method: RequestMethod.GET,
-      })
+      .exclude(
+        {
+          path: 'expenses/all',
+          method: RequestMethod.GET,
+        },
+        {
+          path: 'expenses/totals',
+          method: RequestMethod.GET,
+        }
+    )
       .forRoutes(
         {
           path: 'expenses/delete/:id',

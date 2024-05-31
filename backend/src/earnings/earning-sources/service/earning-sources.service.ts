@@ -15,8 +15,11 @@ export class EarningSourcesService {
   private readonly earningSourceModel: Model<EarningSource>;
 
   // Get all earning sources
-  async getAllEarningsSource(): Promise<EarningSourceDto[]> {
-    const allEarningSources = await this.earningSourceModel.find().exec();
+  async getAllEarningsSource(request: Request): Promise<EarningSourceDto[]> {
+
+    const id_user = request["user"]._id
+
+    const allEarningSources = await this.earningSourceModel.find({id_user: id_user}).exec();
     if (allEarningSources.length === 0) {
       throw new NotFoundException('Nessun fonte di entrata inserito');
     }
@@ -26,7 +29,10 @@ export class EarningSourcesService {
   //Insert new earning source
   async insertNewEarningSource(
     earningSourceDto: EarningSourceDto,
+    request: Request
   ): Promise<EarningSourceDto> {
+    const id_user = request["user"]._id
+    
     const earningSourceName = earningSourceDto.earning_source_name.trim();
 
     const isUniqueSourceName = await this.earningSourceModel.exists({
@@ -40,6 +46,7 @@ export class EarningSourcesService {
     return this.earningSourceModel.create({
       earning_source_name: earningSourceName,
       earning_type: earningSourceDto.earning_type,
+      id_user: id_user
     });
   }
 

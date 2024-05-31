@@ -8,6 +8,11 @@ import { EarningDto } from 'src/earnings/dto/earning.dto';
 import { UpdateEarningDto } from 'src/earnings/dto/update-earning.dto';
 import { Earning } from 'src/schemas/Earning.schema';
 import { TotalEarnings } from 'src/schemas/TotalEarnings.schema';
+import { TotalEarningsDto } from '../dto/total-earnings.dto';
+
+/*
+TODO inserire tutti i controlli dell'id utente loggato
+*/
 
 @Injectable()
 export class EarningsService {
@@ -18,23 +23,88 @@ export class EarningsService {
   ) {}
 
   // Get all earnings
-  async getAllEarnings(): Promise<EarningDto[]> {
+  async getAllEarnings(request: Request): Promise<EarningDto[]> {
+    const id_user = request["user"]._id
     const allEarnings = await this.earningModel
-      .find()
+      .find({id_user: id_user})
       .populate('id_earning_source')
+      .populate('id_user')
       .exec();
 
-    if (allEarnings.length === 0) {
+    if (allEarnings.length == 0) {
       throw new NotFoundException('Nessun entrata inserito');
     }
     return allEarnings;
   }
 
+  async getTotalEarnings(request: Request){
+    
+    const id_user = request["user"]._id
+
+    const totals = await this.totalEarningModel.find({
+      id_user: id_user
+    })   
+
+    // const totals = await this.totalEarningModel.aggregate([
+    //   {
+    //     $group: {
+    //       _id: {
+    //         year: "$year",
+    //         month: "$month"
+    //       },
+    //       earnings_total: {$sum: "$earnings_total"}
+    //     }
+    //   },
+
+    //   {
+    //     $group:{
+    //       _id: "$_id.year",
+    //       months: {
+    //         $push:{
+    //           month: "$_id.month",
+    //           earnings_total: "$earnings_total"
+    //         }
+    //       }
+    //     }
+    //   },
+    //   {
+    //     $project: {
+    //       year: "$_id",
+    //       months: 1,
+    //       _id: 0
+    //     }
+    //   },
+    //   {
+    //     $group: {
+    //       _id: null,
+    //       years: {
+    //         $push: {
+    //           k: { $toString: "$year" },
+    //           v: "$months"
+    //         }
+    //       }
+    //     }
+    //   },
+    //   {
+    //     $replaceRoot: {
+    //       newRoot: { $arrayToObject: "$years" }
+    //     }
+    //   }
+    // ])
+
+    return totals
+  }
+
   // Get all earning by id
-  async getEarninById(_id: string): Promise<EarningDto> {
+  async getEarninById(_id: string, request: Request): Promise<EarningDto> {
+    const id_user = request["user"]._id
     const earning = await this.earningModel
-      .findById(_id)
+      .findById({
+        _id: _id,
+        id_user: id_user
+      })
       .populate('id_earning_source')
+      .populate('id_user')
       .exec();
 
     if (!earning) {
@@ -45,7 +115,7 @@ export class EarningsService {
   }
 
   // Insert new earning
-  async insertNewEarning(earningDto: EarningDto): Promise<EarningDto> {
+  async insertNewEarning(request: Request, earningDto: EarningDto): Promise<EarningDto> {
     // Prima versione con forEach
     // const monthTotalEarnings = await this.totalEarningsModel
     //   .find({}, 'month')
@@ -83,7 +153,8 @@ export class EarningsService {
     // }
 
     // Seconda versione
-    let earningDate
+    const id_user = request["user"]._id
+    let earningDate: Date
     if(!earningDto.earning_date){
       earningDate = new Date()
     }else{
@@ -91,17 +162,14 @@ export class EarningsService {
     }
     const monthUser = new Date(earningDate).getMonth() + 1;
     const yearUser = new Date(earningDate).getFullYear();
-    console.log(yearUser);
-    return
-    
 
     const amountUser = earningDto.earning_amount;
     const earning = await this.totalEarningModel
       .findOneAndUpdate(
-        { month: monthUser, year: yearUser },
+        { month: monthUser, year: yearUser, id_user: id_user },
         {
           $inc: { earnings_total: earningDto.earning_amount },
-          $setOnInsert: { monthUser, amountUser, yearUser },
+          $setOnInsert: { monthUser, amountUser, yearUser, id_user },
         }, // $setOnInsert: consente di specificare valori da impostare per il nuovo documento
         { upsert: true, new: true }, // upsert: true indica di creare un nuovo documento se non ne viene trovato uno corrispondete al filtro
       )
@@ -109,6 +177,7 @@ export class EarningsService {
 
     return this.earningModel.create({
       ...earningDto,
+      id_user: id_user,
       earning_description: earningDto.earning_description.trim(),
     });
   }
@@ -140,11 +209,21 @@ export class EarningsService {
   async updateEarning(
     updateEarningDto: UpdateEarningDto,
     _id: string,
+    request: Request
   ): Promise<UpdateEarningDto> {
-    const earningCurrent = await this.getEarninById(_id);
+    const id_user = request["user"]._id
+
+    const earningCurrent = await this.earningModel
+      .findById({
+        _id: _id,
+        id_user: id_user
+      })
+      .populate('id_earning_source')
+      .populate('id_user')
+      .exec();
 
     const updateEarning = await this.earningModel
-      .findByIdAndUpdate(_id, updateEarningDto, { new: true }).populate('id_earning_source')
+      .findByIdAndUpdate(_id, updateEarningDto, { new: true }).populate('id_earning_source').populate('id_user')
       .exec();
 
     if (!updateEarning) {
@@ -154,21 +233,23 @@ export class EarningsService {
     const monthUser = earningCurrent.earning_date.getMonth() + 1;
     const yearUser = earningCurrent.earning_date.getFullYear();
 
-    if (updateEarningDto.earning_amount > earningCurrent.earning_amount) {
-      const totalEarning = await this.totalEarningModel
-        .findOne({ month: monthUser, year: yearUser })
-        .exec();
+    if(updateEarningDto.earning_amount){
+      if (updateEarningDto.earning_amount > earningCurrent.earning_amount) {
+        const totalEarning = await this.totalEarningModel
+          .findOne({ month: monthUser, year: yearUser })
+          .exec();
 
-      totalEarning.earnings_total = (totalEarning.earnings_total - earningCurrent.earning_amount) + updateEarningDto.earning_amount;
+        totalEarning.earnings_total = (totalEarning.earnings_total - earningCurrent.earning_amount) + updateEarningDto.earning_amount;
 
-      await totalEarning.save();
-    } else {
-      const totalEarning = await this.totalEarningModel
-        .findOne({ month: monthUser, year: yearUser })
-        .exec();
-      totalEarning.earnings_total = totalEarning.earnings_total - (earningCurrent.earning_amount - updateEarningDto.earning_amount);
+        await totalEarning.save();
+      } else {
+        const totalEarning = await this.totalEarningModel
+          .findOne({ month: monthUser, year: yearUser })
+          .exec();
+        totalEarning.earnings_total = totalEarning.earnings_total - (earningCurrent.earning_amount - updateEarningDto.earning_amount);
 
-      await totalEarning.save();
+        await totalEarning.save();
+      }
     }
 
     return updateEarning;

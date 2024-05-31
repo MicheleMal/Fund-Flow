@@ -18,13 +18,16 @@ export class ExpenseSourcesService {
 
   // Get all expense source or specify expense type (Fixed, Variable)
   async getAllExpenseSource(
+    request: Request,
     expenseType?: 'Fixed' | 'Variable',
   ): Promise<ExpenseSourceDto[]> {
+    const id_user = request["user"]._id
     let allExpenseCategories: ExpenseSourceDto[];
 
     if (expenseType) {
       allExpenseCategories = await this.expenseSourceModel
         .find({
+          id_user: id_user,
           expense_type: expenseType,
         })
         .exec();
@@ -36,7 +39,9 @@ export class ExpenseSourcesService {
       }
       return allExpenseCategories;
     } else {
-      allExpenseCategories = await this.expenseSourceModel.find().exec();
+      allExpenseCategories = await this.expenseSourceModel.find({
+        id_user: id_user
+      }).exec();
 
       if (allExpenseCategories.length === 0) {
         throw new NotFoundException('Nessuna categoria di uscite inserita');
@@ -48,7 +53,9 @@ export class ExpenseSourcesService {
   // Insert new expense source
   async insertNewExpenseSource(
     expenseSourceDto: ExpenseSourceDto,
+    request: Request
   ): Promise<ExpenseSourceDto> {
+    const id_user = request["user"]._id
     const isUniqueExpenseSource = await this.expenseSourceModel
       .exists({
         expense_source_name: expenseSourceDto.expense_source_name.trim(),
@@ -60,7 +67,8 @@ export class ExpenseSourcesService {
 
     return this.expenseSourceModel.create({
         expense_source_name: expenseSourceDto.expense_source_name.trim(),
-        expense_type: expenseSourceDto.expense_type.trim()
+        expense_type: expenseSourceDto.expense_type.trim(),
+        id_user: id_user
     });
   }
 

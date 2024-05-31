@@ -5,10 +5,6 @@ import { ObjectIdValidationMiddleware } from 'src/middleware/object-id-validatio
 import { EarningsController } from './controller/earnings.controller';
 import { EarningsService } from './service/earnings.service';
 import {
-  EarningSource,
-  EarningSourceSchema,
-} from 'src/schemas/EarningSource.schema';
-import {
   TotalEarnings,
   TotalEarningsSchema,
 } from 'src/schemas/TotalEarnings.schema';
@@ -34,7 +30,8 @@ import { EarningSourcesModule } from './earning-sources/earning-sources.module';
 export class EarningsModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(ObjectIdValidationMiddleware).exclude(
-      {path: 'earnings/all', method: RequestMethod.GET}
+      {path: 'earnings/all', method: RequestMethod.GET},
+      {path: 'earnings/totals', method: RequestMethod.GET}
     )
     .forRoutes(
       { path: 'earnings/:id', method: RequestMethod.GET },

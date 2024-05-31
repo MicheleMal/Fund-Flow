@@ -5,6 +5,7 @@ import { Expense } from 'src/schemas/Expense.schema';
 import { ExpensesDto } from '../dto/expenses.dto';
 import { UpdateExpenseDto } from '../dto/update-expenses.dto';
 import { TotalExpenses } from 'src/schemas/TotalExpenses.schema';
+import { TotalExpensesDto } from '../dto/total-expenses.dto';
 
 @Injectable()
 export class ExpensesService {
@@ -14,10 +15,14 @@ export class ExpensesService {
     private readonly totalExpensesModel: Model<TotalExpenses>,
   ) {}
 
-  async getAllExpenses(): Promise<ExpensesDto[]> {
+  async getAllExpenses(request: Request): Promise<ExpensesDto[]> {
+    const id_user = request["user"]._id
     const allExpenses = await this.expenseModel
-      .find()
+      .find({
+        id_user: id_user
+      })
       .populate('id_expense_source')
+      .populate('id_user')
       .exec();
 
     if (allExpenses.length == 0) {
@@ -27,8 +32,23 @@ export class ExpensesService {
     return allExpenses;
   }
 
-  async getExpenseById(_id): Promise<ExpensesDto> {
-    const expense = await this.expenseModel.findById(_id).exec();
+  async getTotalExpenses(request: Request): Promise<TotalExpensesDto[]>{
+    
+    const id_user = request["user"]._id
+    const totals = await this.totalExpensesModel.find({id_user: id_user}).exec()
+
+    return totals
+  }
+  
+  async getExpenseById(_id: string, request: Request): Promise<ExpensesDto> {
+    const id_user = request["user"]._id
+    const expense = await this.expenseModel.findById({
+      _id: _id,
+      id_user: id_user
+    })
+    .populate('id_expense_source')
+      .populate('id_user')
+    .exec();
 
     if (!expense) {
       throw new NotFoundException('Nessuna uscita trovata');
@@ -38,7 +58,8 @@ export class ExpensesService {
   }
 
   // Controllare se nella tabelle total expenses non esiste il mese e anno si deve inserire, altrimenti incrementara il valore presente
-  async insertNewExpense(expenseDto: ExpensesDto): Promise<ExpensesDto> {
+  async insertNewExpense(expenseDto: ExpensesDto, request: Request): Promise<ExpensesDto> {
+    const id_user = request["user"]._id
     let expenseDate;
 
     if (!expenseDto.expense_date) {
@@ -56,10 +77,11 @@ export class ExpensesService {
         {
           month: monthUser,
           year: yearUser,
+          id_user: id_user
         },
         {
           $inc: { expenses_total: expenseDto.expense_amount },
-          $setOnInsert: { monthUser, amountUser, yearUser },
+          $setOnInsert: { monthUser, amountUser, yearUser, id_user },
         },
         { upsert: true, new: true },
       )
@@ -68,6 +90,7 @@ export class ExpensesService {
     const newExpense = await this.expenseModel.create({
       ...expenseDto,
       expense_description: expenseDto.expense_description.trim(),
+      id_user: id_user
     });
 
     return newExpense.populate('id_expense_source');
@@ -78,7 +101,7 @@ export class ExpensesService {
     updateExpenseDto: UpdateExpenseDto,
   ): Promise<UpdateExpenseDto> {
 
-    const expenseCurrent = await this.getExpenseById(_id)
+    const expenseCurrent = await this.expenseModel.findById(_id).exec()
 
     const updateExpese = await this.expenseModel
       .findByIdAndUpdate(_id, updateExpenseDto, { new: true })
@@ -94,24 +117,25 @@ export class ExpensesService {
     const monthUser = expenseCurrent.expense_date.getMonth() + 1;
     const yearUser = expenseCurrent.expense_date.getFullYear();
 
-    if (updateExpenseDto.expense_amount > expenseCurrent.expense_amount) {
-      const totalExpense = await this.totalExpensesModel
-        .findOne({ month: monthUser, year: yearUser })
-        .exec();
+    if(updateExpenseDto.expense_amount){
+      if (updateExpenseDto.expense_amount > expenseCurrent.expense_amount) {
+        const totalExpense = await this.totalExpensesModel
+          .findOne({ month: monthUser, year: yearUser })
+          .exec();
 
-        totalExpense.expenses_total = (totalExpense.expenses_total - expenseCurrent.expense_amount) + updateExpenseDto.expense_amount;
+          totalExpense.expenses_total = (totalExpense.expenses_total - expenseCurrent.expense_amount) + updateExpenseDto.expense_amount;
 
-      await totalExpense.save();
-    } else {
-      const totalExpense = await this.totalExpensesModel
-        .findOne({ month: monthUser, year: yearUser })
-        .exec();
-        totalExpense.expenses_total = totalExpense.expenses_total - (expenseCurrent.expense_amount - updateExpenseDto.expense_amount);
+        await totalExpense.save();
+      } else {
+        const totalExpense = await this.totalExpensesModel
+          .findOne({ month: monthUser, year: yearUser })
+          .exec();
+          totalExpense.expenses_total = totalExpense.expenses_total - (expenseCurrent.expense_amount - updateExpenseDto.expense_amount);
 
-        await totalExpense.save()
+          await totalExpense.save()
+      }
     }
-
-
+  
     return updateExpese;
   }
 

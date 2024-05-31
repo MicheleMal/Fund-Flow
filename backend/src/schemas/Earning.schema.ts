@@ -19,8 +19,8 @@ export class Earning {
   @Prop({ type: SchemaTypes.ObjectId, ref: EarningSource.name })
   id_earning_source: Types.ObjectId;
 
-  // @Prop({ type: SchemaTypes.ObjectId, ref: User.name })
-  // id_user: Types.ObjectId;
+  @Prop({ type: SchemaTypes.ObjectId, ref: User.name })
+  id_user: Types.ObjectId;
 }
 
 export const EarningSchema = SchemaFactory.createForClass(Earning);

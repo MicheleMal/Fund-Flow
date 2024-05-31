@@ -1,4 +1,5 @@
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class ExpenseSourceDto {
   @IsString({
@@ -12,4 +13,5 @@ export class ExpenseSourceDto {
   })
   @IsNotEmpty()
   expense_type: 'Fixed' | 'Variable' = 'Variable';
+
 }

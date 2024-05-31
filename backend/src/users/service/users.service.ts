@@ -1,76 +1,56 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User } from 'src/schemas/User.schema';
-import { decryptEmail, encryptEmail } from 'src/utils/crypto.util';
-import * as bcrypt from 'bcrypt';
+import { Injectable, Request } from '@nestjs/common';
 import { UserDto } from '../dto/user.dto';
-import { LoginDto } from '../dto/login-user.dto';
-import { JwtService } from '@nestjs/jwt';
+import { InjectModel } from '@nestjs/mongoose';
+import { User } from 'src/schemas/User.schema';
+import { Model } from 'mongoose';
+import { decryptEmail, encryptEmail } from 'src/utils/crypto.util';
+import { UpdateUserDto } from '../dto/update-user.dto';
+import * as bcrypt from 'bcrypt';
 
-/*
-1. Inserimento nuovo utente (cript password ed email)
-2. Visualizzare informazioni di un determinato utente
-3. Modifica informazione utente
-4. Eliminazione utente con le relative informazioni nelle altre tabelle
-*/
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
-    private readonly jwtService: JwtService
   ) {}
 
-  async registerNewUser(userDto: UserDto): Promise<UserDto> {
-    const saltRounds = 10;
-    const pwHash = bcrypt.hashSync(userDto.password, saltRounds);
+  async getInformationUser(request: Request): Promise<UserDto> {
+    const _id = request['user']._id;
 
-    const existingEmail = (await this.userModel.findOne({email: encryptEmail(userDto.email.toLocaleLowerCase().trim())}).exec())?.email
-    const existingUsername = (await this.userModel.findOne({username: userDto.username.trim()}).exec())?.username
+    const user = await this.userModel.findById(_id).exec();
 
-    if(existingEmail){
-      throw new ConflictException("Email già registata")
-    }
-    if(existingUsername){
-      throw new ConflictException("Username già presente")
-    }
+    user.email = decryptEmail(user.email);
 
-    const newUser = await this.userModel.create({
-      username: userDto.username.trim(),
-      email: encryptEmail(userDto.email.toLowerCase().trim()),
-      password: pwHash,
-    });  
-
-    return newUser;
+    return user;
   }
 
-  async login(loginDto: LoginDto): Promise<{token: string}> {
+  async updateUser(request: Request, updateUserDto: UpdateUserDto): Promise<UpdateUserDto>{
 
-    const userFind  = await this.userModel.findOne(
-        {
-            email: encryptEmail(loginDto.email).toLowerCase().trim()
-        }).exec()
+    const _id = request["user"]._id
 
-    if(!userFind){
-        throw new UnauthorizedException("Email o password errate")
+    if(updateUserDto.email){
+        updateUserDto.email = encryptEmail(updateUserDto.email)
     }
 
-    const pwValid = bcrypt.compareSync(
-      loginDto.password,
-      (await this.userModel.findOne({ email: encryptEmail(loginDto.email.trim()) }).exec()).password,
-    );
-
-    if(!pwValid){
-        throw new UnauthorizedException("Email o password errate")
+    if(updateUserDto.password){
+        const saltRounds = 10;
+        updateUserDto.password = bcrypt.hashSync(updateUserDto.password, saltRounds)
     }
 
-    const payload = {
-      _id: userFind._id,
-    }
-
-    return {
-      token: await this.jwtService.signAsync(payload)
-    };
+    const updateUser = await this.userModel.findOneAndUpdate({_id: _id}, updateUserDto, {new: true}).exec()
+    
+    updateUser.email = decryptEmail(updateUser.email)
+  
+    return updateUser
   }
+
+  //? Eliminare anche tutti i riferimenti dell'utente nelle altre tabelle
+  async deleteUser(request: Request): Promise<UserDto>{
+    const _id = request["user"]._id
+
+    const deleteUser = await this.userModel.findOneAndDelete({_id: _id}).exec()
+
+    return deleteUser
+  }
+
 }

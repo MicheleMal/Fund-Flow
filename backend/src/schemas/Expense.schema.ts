@@ -20,8 +20,8 @@ export class Expense{
     @Prop({type: SchemaTypes.ObjectId, ref: ExpenseSource.name})
     id_expense_source: Types.ObjectId
 
-    // @Prop({type: SchemaTypes.ObjectId, ref: User.name})
-    // id_user: Types.ObjectId
+    @Prop({type: SchemaTypes.ObjectId, ref: User.name})
+    id_user: Types.ObjectId
 }
 
 export const ExpenseSchema = SchemaFactory.createForClass(Expense)
