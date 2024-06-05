@@ -53,8 +53,9 @@ export class ExpensesController {
   update(
     @Param('id') id: string,
     @Body(ValidationPipe) updateExpenseDto: UpdateExpenseDto,
+    @Request() request: Request
   ): Promise<UpdateExpenseDto> {
-    return this.expensesService.updateExpense(id, updateExpenseDto);
+    return this.expensesService.updateExpense(id, updateExpenseDto, request);
   }
 
   // expenses/delete

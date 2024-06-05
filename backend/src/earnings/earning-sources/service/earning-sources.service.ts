@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { EarningSourceDto } from '../dto/earning-source.dto';
@@ -15,15 +16,27 @@ export class EarningSourcesService {
   private readonly earningSourceModel: Model<EarningSource>;
 
   // Get all earning sources
-  async getAllEarningsSource(request: Request): Promise<EarningSourceDto[]> {
+  async getAllEarningsSource(request: Request, earningType?: "Fixed" | "Variable"): Promise<EarningSourceDto[]> {
 
+    let allEarnings: EarningSourceDto[]
     const id_user = request["user"]._id
 
-    const allEarningSources = await this.earningSourceModel.find({id_user: id_user}).exec();
-    if (allEarningSources.length === 0) {
-      throw new NotFoundException('Nessun fonte di entrata inserito');
+    if(earningType){
+      allEarnings = await this.earningSourceModel.find({
+        id_user: id_user,
+        earning_type: earningType
+      }).exec()
+
+      if(allEarnings.length==0){
+        throw new NotFoundException(`Nessuna categoria di uscita di tipo ${earningType} inserita`,)
+      }
+    }else{
+      allEarnings = await this.earningSourceModel.find({id_user: id_user}).exec();
+      if (allEarnings.length === 0) {
+        throw new NotFoundException('Nessun fonte di entrata inserito');
+      }
     }
-    return allEarningSources;
+    return allEarnings;
   }
 
   //Insert new earning source

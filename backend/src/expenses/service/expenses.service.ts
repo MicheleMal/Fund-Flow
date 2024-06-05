@@ -35,7 +35,10 @@ export class ExpensesService {
   async getTotalExpenses(request: Request): Promise<TotalExpensesDto[]>{
     
     const id_user = request["user"]._id
-    const totals = await this.totalExpensesModel.find({id_user: id_user}).exec()
+    const totals = await this.totalExpensesModel.find({id_user: id_user})
+    .sort({'year': 'asc'})
+    .sort({'month': 'asc'})
+    .exec()
 
     return totals
   }
@@ -47,7 +50,7 @@ export class ExpensesService {
       id_user: id_user
     })
     .populate('id_expense_source')
-      .populate('id_user')
+    .populate('id_user')
     .exec();
 
     if (!expense) {
@@ -99,25 +102,35 @@ export class ExpensesService {
   async updateExpense(
     _id: string,
     updateExpenseDto: UpdateExpenseDto,
-  ): Promise<UpdateExpenseDto> {
+    request: Request
+  ): Promise<UpdateExpenseDto> {    
+    const id_user = request["user"]._id
 
-    const expenseCurrent = await this.expenseModel.findById(_id).exec()
+    // Find expense current
+    const expenseCurrent = await this.expenseModel.findById({
+      _id: _id,
+      id_user: id_user
+    })
+    .populate('id_expense_source')
+    .populate('id_user')
+    .exec()
 
+    // Update expense
     const updateExpese = await this.expenseModel
       .findByIdAndUpdate(_id, updateExpenseDto, { new: true })
       .populate('id_expense_source')
+      .populate('id_user')
       .exec();
-
-      if(updateExpenseDto.expense_amount){}
 
     if (!updateExpese) {
       throw new NotFoundException('Nessuna uscita trovato da modificare');
     }
 
+    // If user inserted expense_amount
     const monthUser = expenseCurrent.expense_date.getMonth() + 1;
     const yearUser = expenseCurrent.expense_date.getFullYear();
 
-    if(updateExpenseDto.expense_amount){
+    if(updateExpenseDto.expense_amount){      
       if (updateExpenseDto.expense_amount > expenseCurrent.expense_amount) {
         const totalExpense = await this.totalExpensesModel
           .findOne({ month: monthUser, year: yearUser })
@@ -134,6 +147,29 @@ export class ExpensesService {
 
           await totalExpense.save()
       }
+    }
+
+    // If user inserted expense_date      
+    if(updateExpenseDto.expense_date){              
+      const monthInserted = new Date(updateExpenseDto.expense_date).getMonth()+1
+      const yearInserted = new Date(updateExpenseDto.expense_date).getFullYear() 
+      const expenseAmount = updateExpenseDto.expense_amount ? updateExpenseDto.expense_amount : expenseCurrent.expense_amount
+
+      await this.totalExpensesModel.findOneAndUpdate({
+        month: expenseCurrent.expense_date.getMonth()+1,
+        year: expenseCurrent.expense_date.getFullYear()
+      },{
+        $inc: {expenses_total: -expenseAmount}
+      }).exec()
+
+      const totalExpense = await this.totalExpensesModel.findOneAndUpdate({
+        month: monthInserted,
+        year: yearInserted
+      }, {
+        $inc: {expenses_total: expenseAmount},
+        $setOnInsert: {monthInserted, yearInserted, expenseAmount, id_user}
+      }, {upsert: true, new: true}).exec()
+      
     }
   
     return updateExpese;

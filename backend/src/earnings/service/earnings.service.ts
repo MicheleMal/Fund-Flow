@@ -43,7 +43,7 @@ export class EarningsService {
 
     const totals = await this.totalEarningModel.find({
       id_user: id_user
-    })   
+    }).sort({'year': 'asc'}).sort({'month': 'asc'}).exec()
 
     // const totals = await this.totalEarningModel.aggregate([
     //   {
@@ -213,6 +213,7 @@ export class EarningsService {
   ): Promise<UpdateEarningDto> {
     const id_user = request["user"]._id
 
+    // Find earning current
     const earningCurrent = await this.earningModel
       .findById({
         _id: _id,
@@ -222,6 +223,7 @@ export class EarningsService {
       .populate('id_user')
       .exec();
 
+    // Update earning
     const updateEarning = await this.earningModel
       .findByIdAndUpdate(_id, updateEarningDto, { new: true }).populate('id_earning_source').populate('id_user')
       .exec();
@@ -230,6 +232,7 @@ export class EarningsService {
       throw new NotFoundException('Nessun entrata trovato da modificare');
     }
 
+    // If user inserted earning_amount
     const monthUser = earningCurrent.earning_date.getMonth() + 1;
     const yearUser = earningCurrent.earning_date.getFullYear();
 
@@ -250,6 +253,30 @@ export class EarningsService {
 
         await totalEarning.save();
       }
+    }
+
+    // If user inserted earning_date
+    if(updateEarningDto.earning_date){
+      const monthInserted = new Date(updateEarningDto.earning_date).getMonth()+1
+      const yearInserted = new Date(updateEarningDto.earning_date).getFullYear()
+      const earningAmount = updateEarningDto.earning_amount ? updateEarningDto.earning_amount : earningCurrent.earning_amount
+
+      await this.totalEarningModel.findOneAndUpdate({
+        month: earningCurrent.earning_date.getMonth()+1,
+        year: earningCurrent.earning_date.getFullYear()
+      }, {
+        $inc: {earnings_total: -earningAmount}
+      }).exec()
+
+      const totalEarning = await this.totalEarningModel.findOneAndUpdate({
+        month: monthInserted,
+        year: yearInserted
+      }, {
+        $inc: {earnings_total: earningAmount},
+        $setOnInsert: {monthInserted, yearInserted, earningAmount, id_user}
+      }, {upsert: true, new: true}).exec()
+
+
     }
 
     return updateEarning;

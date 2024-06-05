@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
   UseGuards,
   ValidationPipe,
@@ -22,8 +23,8 @@ export class EarningSourcesController {
   // /all
   @UseGuards(AuthGuard)
   @Get('all')
-  getAllEarningSources(@Request() request: Request) {
-    return this.earningSourcesService.getAllEarningsSource(request);
+  getAllEarningSources(@Request() request: Request, @Query('ext') ext?: "Fixed" | "Variable") {
+    return this.earningSourcesService.getAllEarningsSource(request, ext);
   }
 
   // /insert
