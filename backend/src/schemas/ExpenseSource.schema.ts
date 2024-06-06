@@ -18,3 +18,14 @@ export class ExpenseSource {
 
 export const ExpenseSourceSchema =
   SchemaFactory.createForClass(ExpenseSource);
+
+ExpenseSourceSchema.pre("findOneAndUpdate", function(next){
+  const expenseSources = this.getUpdate()
+
+  Object.keys(expenseSources).forEach((key)=>{
+    if(typeof(expenseSources[key])==="string"){
+      expenseSources[key] = expenseSources[key].trim()
+    }
+  }) 
+  next()
+})

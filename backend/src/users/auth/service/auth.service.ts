@@ -21,8 +21,8 @@ export class AuthService {
         const saltRounds = 10;
         const pwHash = bcrypt.hashSync(userDto.password, saltRounds);
     
-        const existingEmail = (await this.userModel.findOne({email: encryptEmail(userDto.email.toLocaleLowerCase().trim())}).exec())?.email
-        const existingUsername = (await this.userModel.findOne({username: userDto.username.trim()}).exec())?.username
+        const existingEmail = (await this.userModel.findOne({email: encryptEmail(userDto.email.toLocaleLowerCase())}).exec())?.email
+        const existingUsername = (await this.userModel.findOne({username: userDto.username}).exec())?.username
     
         if(existingEmail){
           throw new ConflictException("Email già registata")
@@ -31,11 +31,7 @@ export class AuthService {
           throw new ConflictException("Username già presente")
         }
     
-        const newUser = await this.userModel.create({
-          username: userDto.username.trim(),
-          email: encryptEmail(userDto.email.toLowerCase().trim()),
-          password: pwHash,
-        });  
+        const newUser = await this.userModel.create(userDto);  
     
         return newUser;
       }
@@ -44,7 +40,7 @@ export class AuthService {
     
         const userFind  = await this.userModel.findOne(
             {
-                email: encryptEmail(loginDto.email).toLowerCase().trim()
+                email: encryptEmail(loginDto.email).toLowerCase()
             }).exec()
     
         if(!userFind){
@@ -53,7 +49,7 @@ export class AuthService {
     
         const pwValid = bcrypt.compareSync(
           loginDto.password,
-          (await this.userModel.findOne({ email: encryptEmail(loginDto.email.trim()) }).exec()).password,
+          (await this.userModel.findOne({ email: encryptEmail(loginDto.email) }).exec()).password,
         );
     
         if(!pwValid){

@@ -60,7 +60,6 @@ export class ExpensesService {
     return expense;
   }
 
-  // Controllare se nella tabelle total expenses non esiste il mese e anno si deve inserire, altrimenti incrementara il valore presente
   async insertNewExpense(expenseDto: ExpensesDto, request: Request): Promise<ExpensesDto> {
     const id_user = request["user"]._id
     let expenseDate;
@@ -92,7 +91,6 @@ export class ExpensesService {
 
     const newExpense = await this.expenseModel.create({
       ...expenseDto,
-      expense_description: expenseDto.expense_description.trim(),
       id_user: id_user
     });
 

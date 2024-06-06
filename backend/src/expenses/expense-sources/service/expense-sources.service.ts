@@ -58,7 +58,7 @@ export class ExpenseSourcesService {
     const id_user = request["user"]._id
     const isUniqueExpenseSource = await this.expenseSourceModel
       .exists({
-        expense_source_name: expenseSourceDto.expense_source_name.trim(),
+        expense_source_name: expenseSourceDto.expense_source_name,
       })
       .exec();
     if (isUniqueExpenseSource) {
@@ -66,8 +66,7 @@ export class ExpenseSourcesService {
     }
 
     return this.expenseSourceModel.create({
-        expense_source_name: expenseSourceDto.expense_source_name.trim(),
-        expense_type: expenseSourceDto.expense_type.trim(),
+       ...expenseSourceDto,
         id_user: id_user
     });
   }

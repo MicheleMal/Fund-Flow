@@ -25,3 +25,15 @@ export class Expense{
 }
 
 export const ExpenseSchema = SchemaFactory.createForClass(Expense)
+
+ExpenseSchema.pre("findOneAndUpdate", function(next){
+    const expenses = this.getUpdate()
+
+    Object.keys(expenses).forEach((key)=>{
+        if(typeof(expenses[key])==="string"){
+            expenses[key] = expenses[key].trim()
+        }
+    })
+
+    next()
+})

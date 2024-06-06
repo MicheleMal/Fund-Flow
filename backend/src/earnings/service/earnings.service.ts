@@ -10,10 +10,6 @@ import { Earning } from 'src/schemas/Earning.schema';
 import { TotalEarnings } from 'src/schemas/TotalEarnings.schema';
 import { TotalEarningsDto } from '../dto/total-earnings.dto';
 
-/*
-TODO inserire tutti i controlli dell'id utente loggato
-*/
-
 @Injectable()
 export class EarningsService {
   constructor(
@@ -178,7 +174,6 @@ export class EarningsService {
     return this.earningModel.create({
       ...earningDto,
       id_user: id_user,
-      earning_description: earningDto.earning_description.trim(),
     });
   }
 

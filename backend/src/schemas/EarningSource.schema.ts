@@ -17,3 +17,15 @@ export class EarningSource {
 }
 
 export const EarningSourceSchema = SchemaFactory.createForClass(EarningSource);
+
+EarningSourceSchema.pre("findOneAndUpdate", function(next){
+  const earningSources = this.getUpdate()
+
+  Object.keys(earningSources).forEach((key)=>{
+    if(typeof(earningSources[key]) === "string"){
+      earningSources[key] = earningSources[key].trim()
+    }
+  })
+
+  next()
+})

@@ -24,3 +24,14 @@ export class Earning {
 }
 
 export const EarningSchema = SchemaFactory.createForClass(Earning);
+
+EarningSchema.pre("findOneAndUpdate", function(next){
+  const earnings = this.getUpdate()
+
+  Object.keys(earnings).forEach((key)=>{
+    if(typeof(earnings[key])==="string"){
+      earnings[key] = earnings[key].trim()
+    }
+  })
+  next()
+})

@@ -9,8 +9,8 @@ import { AppController } from './app.controller';
 import { JwtModule } from '@nestjs/jwt';
 
 /*
-  TODO: Quando si elimina un earning/expense source si deve eliminare tutti gli earning/expense associati, stessa cosa quando si elimina l'utente
-  TODO: Controllare gli spazi nel metodo PATCH
+  TODO: Alla eliminazione dell'earning/expense source, eliminare tutti gli earning/expense associati e decrementare nel total earning/expense
+  TODO: Quando elimino un utente eliminare tutto quello associato
 */
 
 @Module({
@@ -34,4 +34,5 @@ import { JwtModule } from '@nestjs/jwt';
   controllers: [AppController],
   providers: [AppService],
 })
+
 export class AppModule {}

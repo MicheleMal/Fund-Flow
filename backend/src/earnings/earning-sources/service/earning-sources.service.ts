@@ -46,10 +46,8 @@ export class EarningSourcesService {
   ): Promise<EarningSourceDto> {
     const id_user = request["user"]._id
     
-    const earningSourceName = earningSourceDto.earning_source_name.trim();
-
     const isUniqueSourceName = await this.earningSourceModel.exists({
-      earning_source_name: earningSourceName,
+      earning_source_name: earningSourceDto.earning_source_name,
     });
 
     if (isUniqueSourceName) {
@@ -57,8 +55,7 @@ export class EarningSourcesService {
     }
 
     return this.earningSourceModel.create({
-      earning_source_name: earningSourceName,
-      earning_type: earningSourceDto.earning_type,
+      ...earningSourceDto,
       id_user: id_user
     });
   }

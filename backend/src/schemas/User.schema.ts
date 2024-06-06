@@ -16,3 +16,14 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.pre("findOneAndUpdate", function(next){
+  const users = this.getUpdate()
+
+  Object.keys(users).forEach((key)=>{
+    if(typeof(users[key])==="string"){
+      users[key] = users[key].trim()
+    }
+  }) 
+  next()
+})
