@@ -9,7 +9,6 @@ import { AppController } from './app.controller';
 import { JwtModule } from '@nestjs/jwt';
 
 /*
-  TODO: Alla eliminazione dell'earning/expense source, eliminare tutti gli earning/expense associati e decrementare nel total earning/expense
   TODO: Quando elimino un utente eliminare tutto quello associato
 */
 

@@ -27,3 +27,10 @@ UserSchema.pre("findOneAndUpdate", function(next){
   }) 
   next()
 })
+
+UserSchema.pre("save", function(next){
+  this.username = this.username.trim()
+  this.email = this.email.trim()
+
+  next()
+})

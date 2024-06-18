@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
+import mongoose, { HydratedDocument, SchemaTypes, Types, mongo } from 'mongoose';
 import { User } from './User.schema';
+import { Earning, EarningSchema } from './Earning.schema';
 
 export type EarningSourceDocument = HydratedDocument<EarningSource>;
 
@@ -26,6 +27,12 @@ EarningSourceSchema.pre("findOneAndUpdate", function(next){
       earningSources[key] = earningSources[key].trim()
     }
   })
+
+  next()
+})
+
+EarningSourceSchema.pre("save", function(next){
+  this.earning_source_name = this.earning_source_name.trim()
 
   next()
 })

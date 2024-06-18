@@ -29,3 +29,9 @@ ExpenseSourceSchema.pre("findOneAndUpdate", function(next){
   }) 
   next()
 })
+
+ExpenseSourceSchema.pre("save", function(next){
+  this.expense_source_name = this.expense_source_name.trim()
+
+  next()
+})

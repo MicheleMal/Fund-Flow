@@ -8,12 +8,16 @@ import { Model } from 'mongoose';
 import { ExpenseSource } from 'src/schemas/ExpenseSource.schema';
 import { ExpenseSourceDto } from '../dto/expense-sources.dto';
 import { UpdateExpenseSourcesDto } from '../dto/update-expense-sources.dto';
+import { Expense } from 'src/schemas/Expense.schema';
+import { exec } from 'child_process';
 
 @Injectable()
 export class ExpenseSourcesService {
   constructor(
     @InjectModel(ExpenseSource.name)
     private readonly expenseSourceModel: Model<ExpenseSource>,
+    @InjectModel(Expense.name)
+    private readonly expenseModel: Model<Expense>,
   ) {}
 
   // Get all expense source or specify expense type (Fixed, Variable)
@@ -95,12 +99,20 @@ export class ExpenseSourcesService {
       .findByIdAndDelete(_id)
       .exec();
 
+    if(deleteExpenseSource){
+      this.expenseModel.deleteMany({
+        id_expense_source: deleteExpenseSource._id
+      }).exec()
+
+      return deleteExpenseSource;
+    }
+
     if (!deleteExpenseSource) {
       throw new NotFoundException(
         'Nessuna fonte di uscita trovata da eliminare',
       );
     }
 
-    return deleteExpenseSource;
+    
   }
 }

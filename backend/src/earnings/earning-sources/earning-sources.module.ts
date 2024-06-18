@@ -7,6 +7,7 @@ import {
 } from 'src/schemas/EarningSource.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ObjectIdValidationMiddleware } from 'src/middleware/object-id-validation/object-id-validation.middleware';
+import { Earning, EarningSchema } from 'src/schemas/Earning.schema';
 
 @Module({
   imports: [
@@ -14,6 +15,10 @@ import { ObjectIdValidationMiddleware } from 'src/middleware/object-id-validatio
       {
         name: EarningSource.name,
         schema: EarningSourceSchema,
+      },
+      {
+        name: Earning.name,
+        schema: EarningSchema,
       },
     ]),
   ],

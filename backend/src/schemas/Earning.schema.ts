@@ -35,3 +35,9 @@ EarningSchema.pre("findOneAndUpdate", function(next){
   })
   next()
 })
+
+EarningSchema.pre("save", function(next){
+  this.earning_description = this.earning_description.trim()
+
+  next()
+})

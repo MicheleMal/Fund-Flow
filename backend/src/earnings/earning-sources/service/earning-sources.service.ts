@@ -9,11 +9,15 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { EarningSource } from 'src/schemas/EarningSource.schema';
 import { UpdateEarningSourceDto } from '../dto/update-earning-source.dto';
+import { Earning } from 'src/schemas/Earning.schema';
 
 @Injectable()
 export class EarningSourcesService {
-  @InjectModel(EarningSource.name)
-  private readonly earningSourceModel: Model<EarningSource>;
+
+  constructor(
+    @InjectModel(EarningSource.name) private readonly earningSourceModel: Model<EarningSource>, 
+    @InjectModel(Earning.name) private readonly earningModel: Model<Earning>
+  ){}
 
   // Get all earning sources
   async getAllEarningsSource(request: Request, earningType?: "Fixed" | "Variable"): Promise<EarningSourceDto[]> {
@@ -78,13 +82,23 @@ export class EarningSourcesService {
 
   // Delete earning source by id
   async deleteEarningSource(_id: string): Promise<EarningSourceDto>{
+    
     const deleteEarningSource = await this.earningSourceModel
-      .findByIdAndDelete(_id)
+      .findOneAndDelete({
+        _id: _id
+      })
       .exec();
+      
+    if(deleteEarningSource){
+      this.earningModel.deleteMany({
+        id_earning_source: deleteEarningSource._id
+      }).exec()
+    }    
 
     if (!deleteEarningSource) {
       throw new NotFoundException('Nessuna fonte entrata trovata');
     }
+
     return deleteEarningSource
   }
 }

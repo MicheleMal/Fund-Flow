@@ -37,3 +37,9 @@ ExpenseSchema.pre("findOneAndUpdate", function(next){
 
     next()
 })
+
+ExpenseSchema.pre("save", function(next){
+    this.expense_description = this.expense_description.trim()
+  
+    next()
+  })
