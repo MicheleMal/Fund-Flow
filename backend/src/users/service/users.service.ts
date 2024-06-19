@@ -6,12 +6,24 @@ import { Model } from 'mongoose';
 import { decryptEmail, encryptEmail } from 'src/utils/crypto.util';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { Earning } from 'src/schemas/Earning.schema';
+import { EarningSource } from 'src/schemas/EarningSource.schema';
+import { Expense } from 'src/schemas/Expense.schema';
+import { ExpenseSource } from 'src/schemas/ExpenseSource.schema';
+import { TotalEarnings } from 'src/schemas/TotalEarnings.schema';
+import { TotalExpenses } from 'src/schemas/TotalExpenses.schema';
 
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(Earning.name) private readonly earningModel: Model<Earning>,
+    @InjectModel(EarningSource.name) private readonly earningSourceModel: Model<EarningSource>,
+    @InjectModel(Expense.name) private readonly expenseModel: Model<Expense>,
+    @InjectModel(ExpenseSource.name) private readonly expenseSourceModel: Model<ExpenseSource>,
+    @InjectModel(TotalEarnings.name) private readonly totalEarningModel: Model<TotalEarnings>,
+    @InjectModel(TotalExpenses.name) private readonly totalExpenseModel: Model<TotalExpenses>,
   ) {}
 
   async getInformationUser(request: Request): Promise<UserDto> {
@@ -49,6 +61,32 @@ export class UsersService {
     const _id = request["user"]._id
 
     const deleteUser = await this.userModel.findOneAndDelete({_id: _id}).exec()
+
+    if(deleteUser){
+      await this.earningModel.deleteMany({
+        id_user: _id
+      }).exec()
+
+      await this.earningSourceModel.deleteMany({
+        id_user: _id
+      }).exec()
+
+      await this.expenseModel.deleteMany({
+        id_user: _id
+      }).exec()
+
+      await this.expenseSourceModel.deleteMany({
+        id_user: _id
+      }).exec()
+      
+      await this.totalEarningModel.deleteMany({
+        id_user: _id
+      }).exec()
+      
+      await this.totalExpenseModel.deleteMany({
+        id_user: _id
+      }).exec()
+    }
 
     return deleteUser
   }
