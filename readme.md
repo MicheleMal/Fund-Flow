@@ -32,7 +32,6 @@ Questo progetto consente agli utenti di registrare e gestire le proprie entrate 
 * **Database:** MongoDB
 
 ## Prossime funzionalità
-* Autenticazione utenti
-* Visualizzazione del totale delle entrate per anno e mese
-* Inserimento del calcolo delle uscite totali per mese e anno
-* Ogni mese calcolo del saldo totale tra entrate e uscite
+* Migliorare l'autenticazione degli utenti, includendo invio email
+* Sviluppare sistema reset password
+* Inserire funzionalità account verificato 
