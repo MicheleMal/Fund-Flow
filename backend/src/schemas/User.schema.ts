@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { encryptEmail } from 'src/utils/crypto.util';
+import * as bcrypt from "bcrypt"
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -29,8 +31,11 @@ UserSchema.pre("findOneAndUpdate", function(next){
 })
 
 UserSchema.pre("save", function(next){
+  const saltRounds = 10;
   this.username = this.username.trim()
   this.email = this.email.trim()
+  this.email = encryptEmail(this.email.trim())
+  this.password = bcrypt.hashSync(this.password, saltRounds)
 
   next()
 })

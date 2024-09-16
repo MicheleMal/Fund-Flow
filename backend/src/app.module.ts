@@ -8,10 +8,6 @@ import { UsersModule } from './users/users.module';
 import { AppController } from './app.controller';
 import { JwtModule } from '@nestjs/jwt';
 
-/*
-  TODO: Quando elimino un utente eliminare tutto quello associato
-*/
-
 @Module({
   imports: [
     ConfigModule.forRoot({

@@ -20,9 +20,7 @@ export class AuthService {
   ) {}
 
   async registerNewUser(userDto: UserDto): Promise<UserDto> {
-    const saltRounds = 10;
-    const pwHash = bcrypt.hashSync(userDto.password, saltRounds);
-
+    
     const existingEmail = await this.userModel.exists({ email: encryptEmail(userDto.email.toLowerCase()) }).exec();
     const existingUsername = await this.userModel.exists({ username: userDto.username}).exec();
 
@@ -33,10 +31,7 @@ export class AuthService {
       throw new ConflictException("Username già inserita")
     }
 
-    const newUser = await this.userModel.create({
-      ...userDto,
-      password: pwHash
-    });
+    const newUser = await this.userModel.create(userDto);
 
     return newUser;
   }
