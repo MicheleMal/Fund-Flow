@@ -9,7 +9,7 @@ import { ExpenseSource } from 'src/schemas/ExpenseSource.schema';
 import { ExpenseSourceDto } from '../dto/expense-sources.dto';
 import { UpdateExpenseSourcesDto } from '../dto/update-expense-sources.dto';
 import { Expense } from 'src/schemas/Expense.schema';
-import { exec } from 'child_process';
+import { TotalExpenses } from 'src/schemas/TotalExpenses.schema';
 
 @Injectable()
 export class ExpenseSourcesService {
@@ -18,6 +18,8 @@ export class ExpenseSourcesService {
     private readonly expenseSourceModel: Model<ExpenseSource>,
     @InjectModel(Expense.name)
     private readonly expenseModel: Model<Expense>,
+    @InjectModel(TotalExpenses.name)
+    private readonly totalExpenseModel: Model<TotalExpenses>,
   ) {}
 
   // Get all expense source or specify expense type (Fixed, Variable)
@@ -25,7 +27,7 @@ export class ExpenseSourcesService {
     request: Request,
     expenseType?: 'Fixed' | 'Variable',
   ): Promise<ExpenseSourceDto[]> {
-    const id_user = request["user"]._id
+    const id_user = request['user']._id;
     let allExpenseCategories: ExpenseSourceDto[];
 
     if (expenseType) {
@@ -43,9 +45,11 @@ export class ExpenseSourcesService {
       }
       return allExpenseCategories;
     } else {
-      allExpenseCategories = await this.expenseSourceModel.find({
-        id_user: id_user
-      }).exec();
+      allExpenseCategories = await this.expenseSourceModel
+        .find({
+          id_user: id_user,
+        })
+        .exec();
 
       if (allExpenseCategories.length === 0) {
         throw new NotFoundException('Nessuna categoria di uscite inserita');
@@ -57,9 +61,9 @@ export class ExpenseSourcesService {
   // Insert new expense source
   async insertNewExpenseSource(
     expenseSourceDto: ExpenseSourceDto,
-    request: Request
+    request: Request,
   ): Promise<ExpenseSourceDto> {
-    const id_user = request["user"]._id
+    const id_user = request['user']._id;
     const isUniqueExpenseSource = await this.expenseSourceModel
       .exists({
         expense_source_name: expenseSourceDto.expense_source_name,
@@ -70,8 +74,8 @@ export class ExpenseSourcesService {
     }
 
     return this.expenseSourceModel.create({
-       ...expenseSourceDto,
-        id_user: id_user
+      ...expenseSourceDto,
+      id_user: id_user,
     });
   }
 
@@ -96,13 +100,35 @@ export class ExpenseSourcesService {
   // Delete expese source
   async deleteExpenseSource(_id: string): Promise<ExpenseSourceDto> {
     const deleteExpenseSource = await this.expenseSourceModel
-      .findByIdAndDelete(_id)
+      .findOneAndDelete({
+        _id: _id,
+      })
       .exec();
 
-    if(deleteExpenseSource){
-      this.expenseModel.deleteMany({
-        id_expense_source: deleteExpenseSource._id
-      }).exec()
+    if (deleteExpenseSource) {
+      const deleteExpense = await this.expenseModel
+        .find({
+          id_expense_source: deleteExpenseSource._id,
+        })
+        .exec();
+
+      deleteExpense.map(async (expense) => {
+        await this.totalExpenseModel
+          .updateMany(
+            {
+              month: expense.expense_date.getMonth() + 1,
+              year: expense.expense_date.getFullYear(),
+            },
+            {
+              $inc: { expenses_total: -expense.expense_amount },
+            },
+          )
+          .exec();
+      });
+
+      await this.expenseModel.deleteMany({
+        id_expense_source: _id,
+      });
 
       return deleteExpenseSource;
     }
@@ -112,7 +138,5 @@ export class ExpenseSourcesService {
         'Nessuna fonte di uscita trovata da eliminare',
       );
     }
-
-    
   }
 }
