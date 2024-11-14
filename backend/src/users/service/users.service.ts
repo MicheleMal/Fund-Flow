@@ -1,4 +1,4 @@
-import { Injectable, Request } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UserDto } from '../dto/user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from 'src/schemas/User.schema';
@@ -12,11 +12,13 @@ import { Expense } from 'src/schemas/Expense.schema';
 import { ExpenseSource } from 'src/schemas/ExpenseSource.schema';
 import { TotalEarnings } from 'src/schemas/TotalEarnings.schema';
 import { TotalExpenses } from 'src/schemas/TotalExpenses.schema';
+import { EmailService } from 'src/email/service/email.service';
 
 
 @Injectable()
 export class UsersService {
   constructor(
+    private readonly emailService: EmailService,
     @InjectModel(User.name) private readonly userModel: Model<User>,
     @InjectModel(Earning.name) private readonly earningModel: Model<Earning>,
     @InjectModel(EarningSource.name) private readonly earningSourceModel: Model<EarningSource>,
@@ -38,6 +40,7 @@ export class UsersService {
 
   async updateUser(request: Request, updateUserDto: UpdateUserDto): Promise<UpdateUserDto>{
 
+    console.log(updateUserDto)
     const _id = request["user"]._id
 
     if(updateUserDto.email){
@@ -50,13 +53,15 @@ export class UsersService {
     }
 
     const updateUser = await this.userModel.findOneAndUpdate({_id: _id}, updateUserDto, {new: true}).exec()
-    
-    updateUser.email = decryptEmail(updateUser.email)
+
+    const emailDecrypted = decryptEmail(updateUser.email)
+    updateUser.email = emailDecrypted
+
+    this.emailService.sendUpdateUserEmail(emailDecrypted)
   
     return updateUser
   }
 
-  //? Eliminare anche tutti i riferimenti dell'utente nelle altre tabelle
   async deleteUser(request: Request): Promise<UserDto>{
     const _id = request["user"]._id
 
@@ -87,6 +92,9 @@ export class UsersService {
         id_user: _id
       }).exec()
     }
+
+    const emailDecrypted = decryptEmail(deleteUser.email)
+    this.emailService.sendDeleteUserEmail(emailDecrypted)
 
     return deleteUser
   }

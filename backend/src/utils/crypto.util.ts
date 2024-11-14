@@ -1,7 +1,5 @@
 import * as crypto from 'crypto';
 
-//? Sistemare queste funzioni
-
 const alg = 'aes-256-cbc';
 
 export const encryptEmail = (email: string): string => {

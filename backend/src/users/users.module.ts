@@ -12,6 +12,7 @@ import { Expense, ExpenseSchema } from 'src/schemas/Expense.schema';
 import { ExpenseSource, ExpenseSourceSchema } from 'src/schemas/ExpenseSource.schema';
 import { TotalEarnings, TotalEarningsSchema } from 'src/schemas/TotalEarnings.schema';
 import { TotalExpenses, TotalExpensesSchema } from 'src/schemas/TotalExpenses.schema';
+import { EmailModule } from 'src/email/email.module';
 
 @Module({
   imports: [
@@ -45,7 +46,8 @@ import { TotalExpenses, TotalExpensesSchema } from 'src/schemas/TotalExpenses.sc
         schema: TotalExpensesSchema
       },
     ]),
-    AuthModule
+    AuthModule,
+    EmailModule
   ],
   controllers: [UsersController],
   providers: [UsersService]
