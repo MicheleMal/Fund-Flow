@@ -16,4 +16,4 @@ export class TemporanyCodes{
 }
 
 export const TemporanyCodesSchema = SchemaFactory.createForClass(TemporanyCodes)
-TemporanyCodesSchema.index({"createdAt": 1}, {expireAfterSeconds: 120 })
+TemporanyCodesSchema.index({"createdAt": 1}, {expireAfterSeconds: 300 }) // 5 minuti

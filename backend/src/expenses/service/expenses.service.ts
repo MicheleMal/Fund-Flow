@@ -40,6 +40,10 @@ export class ExpensesService {
     .sort({'month': 'asc'})
     .exec()
 
+    if(totals.length===0){
+      throw new NotFoundException("Nessuna uscita totale disponibile")
+    }
+
     return totals
   }
   

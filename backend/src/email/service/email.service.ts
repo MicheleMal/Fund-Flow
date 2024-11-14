@@ -38,7 +38,7 @@ export class EmailService {
 
   async sendTemporanyCodeEmail(to: string, code: number){
     this.mailService.sendMail({
-      from: "devapp381@gmail.com",
+      from: this.configService.get<string>('FROM_EMAIL'),
       to: to,
       subject: "Codice temporaneo",
       text: `Codice temporaneo per ripristinare la password: ${code}` 
@@ -47,7 +47,7 @@ export class EmailService {
 
   async sendRestPasswordEmail(to: string){
     this.mailService.sendMail({
-      from: "devapp381@gmail.com",
+      from: this.configService.get<string>('FROM_EMAIL'),
       to: to,
       subject: "Password resettata",
       text: "La password è stata resettata"

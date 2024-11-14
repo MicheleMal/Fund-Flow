@@ -41,6 +41,10 @@ export class EarningsService {
       id_user: id_user
     }).sort({'year': 'asc'}).sort({'month': 'asc'}).exec()
 
+    if(totals.length==0){
+      throw new NotFoundException("Nessuna entrata totale disponibile")
+    }
+
     // const totals = await this.totalEarningModel.aggregate([
     //   {
     //     $group: {
@@ -151,6 +155,7 @@ export class EarningsService {
     // Seconda versione
     const id_user = request["user"]._id
     let earningDate: Date
+
     if(!earningDto.earning_date){
       earningDate = new Date()
     }else{
@@ -171,10 +176,12 @@ export class EarningsService {
       )
       .exec();
 
-    return this.earningModel.create({
+    const newEarning = await this.earningModel.create({
       ...earningDto,
       id_user: id_user,
     });
+
+    return newEarning.populate("id_earning_source")
   }
 
   // Delete earning by id
