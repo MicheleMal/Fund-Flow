@@ -12,16 +12,17 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.local',
     }),
 
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
       // signOptions:{
-      //   expiresIn: "1s"
+      //   expiresIn: ""
       // }
     }),
-    MongooseModule.forRoot(process.env.DATABASE_URL_DEV),
+    MongooseModule.forRoot(process.env.DATABASE_URL),
     UsersModule,
     EarningsModule,
     ExpensesModule,
