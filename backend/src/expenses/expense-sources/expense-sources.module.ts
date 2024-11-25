@@ -28,7 +28,9 @@ export class ExpenseSourcesModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(ObjectIdValidationMiddleware)
+      .exclude({ path: 'expense-sources/all', method: RequestMethod.GET })
       .forRoutes(
+        { path: 'expense-sources/:id', method: RequestMethod.GET },
         { path: 'expense-sources/update/:id', method: RequestMethod.PATCH },
         { path: 'expense-sources/delete/:id', method: RequestMethod.DELETE },
       );

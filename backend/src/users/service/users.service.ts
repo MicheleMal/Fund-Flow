@@ -13,6 +13,7 @@ import { ExpenseSource } from 'src/schemas/ExpenseSource.schema';
 import { TotalEarnings } from 'src/schemas/TotalEarnings.schema';
 import { TotalExpenses } from 'src/schemas/TotalExpenses.schema';
 import { EmailService } from 'src/email/service/email.service';
+import { CustomResppnseDto } from 'src/dto/custom-response.dto';
 
 
 @Injectable()
@@ -38,7 +39,7 @@ export class UsersService {
     return user;
   }
 
-  async updateUser(request: Request, updateUserDto: UpdateUserDto): Promise<UpdateUserDto>{
+  async updateUser(request: Request, updateUserDto: UpdateUserDto): Promise<CustomResppnseDto>{
 
     console.log(updateUserDto)
     const _id = request["user"]._id
@@ -59,10 +60,14 @@ export class UsersService {
 
     this.emailService.sendUpdateUserEmail(emailDecrypted)
   
-    return updateUser
+    return {
+      message: "Profilo aggiornato. Una email di notifica è stata inviata al tuo indirizzo",
+      data: updateUser,
+      success: true
+    }
   }
 
-  async deleteUser(request: Request): Promise<UserDto>{
+  async deleteUser(request: Request): Promise<CustomResppnseDto>{
     const _id = request["user"]._id
 
     const deleteUser = await this.userModel.findOneAndDelete({_id: _id}).exec()
@@ -96,7 +101,11 @@ export class UsersService {
     const emailDecrypted = decryptEmail(deleteUser.email)
     this.emailService.sendDeleteUserEmail(emailDecrypted)
 
-    return deleteUser
+    return {
+      message: "Profilo eliminato definitivamente. Una email di notifica è stata inviata al suo indirizzo",
+      data: deleteUser,
+      success: true
+    }
   }
 
 }

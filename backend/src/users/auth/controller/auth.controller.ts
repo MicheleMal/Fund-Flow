@@ -2,15 +2,15 @@ import { Body, Controller, Get, Post, Request, UseGuards, ValidationPipe } from 
 import { UserDto } from 'src/users/dto/user.dto';
 import { LoginDto } from '../dto/login-user.dto';
 import { AuthService } from '../service/auth.service';
-import { AuthGuard } from '../guard/auth.guard';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
+import { CustomResppnseDto } from 'src/dto/custom-response.dto';
 
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService){}
 
     @Post("register")
-    register(@Body(ValidationPipe)userDto: UserDto): Promise<UserDto>{
+    register(@Body(ValidationPipe)userDto: UserDto): Promise<CustomResppnseDto>{
         return this.authService.registerNewUser(userDto)
     }
 
@@ -20,12 +20,12 @@ export class AuthController {
     }
 
     @Post("temporany-code")
-    generateTemporanyCode(@Body("email") email: string){
+    generateTemporanyCode(@Body("email") email: string): Promise<CustomResppnseDto>{
         return this.authService.generateTemporanyCode(email)
     }
 
     @Post('reset-password')
-    resetPassword(@Body(ValidationPipe) resetPasswordDto: ResetPasswordDto){
+    resetPassword(@Body(ValidationPipe) resetPasswordDto: ResetPasswordDto): Promise<CustomResppnseDto>{
         return this.authService.resetPassword(resetPasswordDto)
     }
 }

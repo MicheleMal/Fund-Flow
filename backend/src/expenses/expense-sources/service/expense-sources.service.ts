@@ -22,25 +22,37 @@ export class ExpenseSourcesService {
     private readonly totalExpenseModel: Model<TotalExpenses>,
   ) {}
 
+  // Get a source of earning by id
+  async getEarningSourceById(_id: string): Promise<ExpenseSourceDto>{
+
+    const expenseSource = await this.expenseSourceModel.findById(_id).exec()
+
+    if(!expenseSource){
+      throw new NotFoundException("Nessuna fonte di spesa trovata")
+    }
+
+    return expenseSource
+  }
+
   // Get all expense source or specify expense type (Fixed, Variable)
   async getAllExpenseSource(
     request: Request,
-    expenseType?: 'Fixed' | 'Variable',
+    expenseSourceType?: 'Fixed' | 'Variable',
   ): Promise<ExpenseSourceDto[]> {
     const id_user = request['user']._id;
     let allExpenseCategories: ExpenseSourceDto[];
 
-    if (expenseType) {
+    if (expenseSourceType) {
       allExpenseCategories = await this.expenseSourceModel
         .find({
           id_user: id_user,
-          expense_type: expenseType,
+          expense_type: expenseSourceType,
         })
         .exec();
 
       if (allExpenseCategories.length === 0) {
         throw new NotFoundException(
-          `Nessuna categoria di uscita di tipo ${expenseType} inserita`,
+          `Nessuna categoria di uscita di tipo ${expenseSourceType} inserita`,
         );
       }
       return allExpenseCategories;

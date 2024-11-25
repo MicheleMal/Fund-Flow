@@ -25,10 +25,19 @@ export class ExpenseSourcesController {
   @Get('all')
   getAllExpenseSource(
     @Request() request: Request,
-    @Query('ext') ext?: 'Fixed' | 'Variable'
+    @Query('ext') exst?: 'Fixed' | 'Variable'
   ): Promise<ExpenseSourceDto[]> {
-    return this.expenseSourceService.getAllExpenseSource(request, ext);
+    return this.expenseSourceService.getAllExpenseSource(request, exst);
   }
+
+    // /:id
+    @UseGuards(AuthGuard)
+    @Get(':id')
+    getEarningSourceById(
+      @Param('id') _id: string,
+    ): Promise<ExpenseSourceDto> {
+      return this.expenseSourceService.getEarningSourceById(_id);
+    }
 
   // /expense-sources/insert
   @UseGuards(AuthGuard)

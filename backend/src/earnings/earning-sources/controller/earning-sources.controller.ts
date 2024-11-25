@@ -20,11 +20,23 @@ import { AuthGuard } from 'src/users/auth/guard/auth.guard';
 export class EarningSourcesController {
   constructor(private readonly earningSourcesService: EarningSourcesService) {}
 
-  // /all
+  // /all or /all?et
   @UseGuards(AuthGuard)
   @Get('all')
-  getAllEarningSources(@Request() request: Request, @Query('ext') ext?: "Fixed" | "Variable") {
-    return this.earningSourcesService.getAllEarningsSource(request, ext);
+  getAllEarningSources(
+    @Request() request: Request,
+    @Query('est') est?: 'Fixed' | 'Variable',
+  ) {
+    return this.earningSourcesService.getAllEarningsSource(request, est);
+  }
+
+  // /:id
+  @UseGuards(AuthGuard)
+  @Get(':id')
+  getEarningSourceById(
+    @Param('id') _id: string,
+  ): Promise<EarningSourceDto> {
+    return this.earningSourcesService.getEarningSourceById(_id);
   }
 
   // /insert
@@ -32,9 +44,12 @@ export class EarningSourcesController {
   @Post('insert')
   insertEarningSource(
     @Body(ValidationPipe) earningSourceDto: EarningSourceDto,
-    @Request() request: Request
+    @Request() request: Request,
   ): Promise<EarningSourceDto> {
-    return this.earningSourcesService.insertNewEarningSource(earningSourceDto, request);
+    return this.earningSourcesService.insertNewEarningSource(
+      earningSourceDto,
+      request,
+    );
   }
 
   // /update/:id

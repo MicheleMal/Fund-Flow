@@ -15,6 +15,7 @@ import * as bcrypt from 'bcrypt';
 import { EmailService } from 'src/email/service/email.service';
 import { TemporanyCodes } from 'src/schemas/TemporaryCodes.schema';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
+import { CustomResppnseDto } from 'src/dto/custom-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +27,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async registerNewUser(userDto: UserDto): Promise<UserDto> {
+  async registerNewUser(userDto: UserDto): Promise<CustomResppnseDto> {
     const existingEmail = await this.userModel
       .exists({ email: encryptEmail(userDto.email.toLowerCase()) })
       .exec();
@@ -48,7 +49,11 @@ export class AuthService {
 
     const newUser = await this.userModel.create(userDto);
 
-    return newUser;
+    return {
+      message: 'Email di benvenuta inviata',
+      data: newUser,
+      success: true,
+    };
   }
 
   async login(loginDto: LoginDto): Promise<{ token: string }> {
@@ -84,10 +89,12 @@ export class AuthService {
     };
   }
 
-  async generateTemporanyCode(email: string): Promise<{}> {
+  async generateTemporanyCode(email: string): Promise<CustomResppnseDto> {
     const code = Math.floor(1000 + Math.random() * 9000);
 
-    const user = await this.userModel.findOne({ email: encryptEmail(email) }).exec();
+    const user = await this.userModel
+      .findOne({ email: encryptEmail(email) })
+      .exec();
 
     if (!user) {
       throw new NotFoundException('Email non registrata');
@@ -101,13 +108,15 @@ export class AuthService {
     this.emailService.sendTemporanyCodeEmail(email, code);
 
     return {
-      opt: code
+      message: "Codice otp inviato via email",
+      data: [],
+      success: false
     };
   }
 
-  async resetPassword(resetPasswordDto: ResetPasswordDto) {
-    // Controllare se l'otp inserito dall'utente è corretto
-
+  async resetPassword(
+    resetPasswordDto: ResetPasswordDto,
+  ): Promise<CustomResppnseDto> {
     const checkOtp = await this.temporanyCodeModel.findOne({
       code: resetPasswordDto.otp,
     });
@@ -132,9 +141,13 @@ export class AuthService {
       )
       .exec();
 
-      const emailDecrypted = decryptEmail(userUpdated.email)
-      this.emailService.sendRestPasswordEmail(emailDecrypted)
+    const emailDecrypted = decryptEmail(userUpdated.email);
+    this.emailService.sendRestPasswordEmail(emailDecrypted);
 
-    return userUpdated;
+    return {
+      message: 'Password resettata',
+      data: userUpdated,
+      success: true,
+    };
   }
 }

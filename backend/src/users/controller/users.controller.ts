@@ -3,6 +3,7 @@ import { UsersService } from '../service/users.service';
 import { UserDto } from '../dto/user.dto';
 import { AuthGuard } from '../auth/guard/auth.guard';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { CustomResppnseDto } from 'src/dto/custom-response.dto';
 
 @Controller('users')
 export class UsersController {
@@ -16,13 +17,13 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @Patch('update')
-  updateUser(@Request() request: Request, @Body(ValidationPipe) updateUserDto: UpdateUserDto): Promise<UpdateUserDto>{
+  updateUser(@Request() request: Request, @Body(ValidationPipe) updateUserDto: UpdateUserDto): Promise<CustomResppnseDto>{
     return this.usersService.updateUser(request, updateUserDto)
   }
 
   @UseGuards(AuthGuard)
   @Delete('delete')
-  deleteUser(@Request() request: Request): Promise<UserDto>{
+  deleteUser(@Request() request: Request): Promise<CustomResppnseDto>{
     return this.usersService.deleteUser(request)
   }
 }

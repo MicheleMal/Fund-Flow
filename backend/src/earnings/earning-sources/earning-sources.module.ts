@@ -8,7 +8,10 @@ import {
 import { MongooseModule } from '@nestjs/mongoose';
 import { ObjectIdValidationMiddleware } from 'src/middleware/object-id-validation/object-id-validation.middleware';
 import { Earning, EarningSchema } from 'src/schemas/Earning.schema';
-import { TotalEarnings, TotalEarningsSchema } from 'src/schemas/TotalEarnings.schema';
+import {
+  TotalEarnings,
+  TotalEarningsSchema,
+} from 'src/schemas/TotalEarnings.schema';
 
 @Module({
   imports: [
@@ -34,7 +37,9 @@ export class EarningSourcesModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(ObjectIdValidationMiddleware)
+      .exclude({ path: 'earning-sources/all', method: RequestMethod.GET })
       .forRoutes(
+        { path: 'earning-sources/:id', method: RequestMethod.GET },
         { path: 'earning-sources/update/:id', method: RequestMethod.PATCH },
         { path: 'earning-sources/delete/:id', method: RequestMethod.DELETE },
       );

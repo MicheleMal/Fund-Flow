@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { EarningSourceDto } from '../dto/earning-source.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { EarningSource } from 'src/schemas/EarningSource.schema';
 import { UpdateEarningSourceDto } from '../dto/update-earning-source.dto';
 import { Earning } from 'src/schemas/Earning.schema';
@@ -22,25 +22,36 @@ export class EarningSourcesService {
     private readonly totalEarningModel: Model<TotalEarnings>,
   ) {}
 
-  // Get all earning sources
+  // Get a source of earning by id
+  async getEarningSourceById(_id: string): Promise<EarningSourceDto>{
+    const earningSource = await this.earningSourceModel.findById(_id).exec()
+
+    if(!earningSource){
+      throw new NotFoundException("Nessuna fonte di guadagno trovata")
+    }
+
+    return earningSource
+  }
+
+  // Get all earnings source or specific type 
   async getAllEarningsSource(
     request: Request,
-    earningType?: 'Fixed' | 'Variable',
+    earningSourceType?: 'Fixed' | 'Variable',
   ): Promise<EarningSourceDto[]> {
     let allEarnings: EarningSourceDto[];
     const id_user = request['user']._id;
 
-    if (earningType) {
+    if (earningSourceType) {
       allEarnings = await this.earningSourceModel
         .find({
           id_user: id_user,
-          earning_type: earningType,
+          earning_type: earningSourceType,
         })
         .exec();
 
       if (allEarnings.length == 0) {
         throw new NotFoundException(
-          `Nessuna categoria di uscita di tipo ${earningType} inserita`,
+          `Nessuna categoria di uscita di tipo ${earningSourceType} inserita`,
         );
       }
     } else {
